@@ -1,57 +1,119 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div>
+    <div class="navbar" v-if="isShowTabs">
+      <div
+        v-for="(item, index) in menuList"
+        :key="index"
+        class="tab"
+        :class="{ active: tabActive === index }"
+        @click="handleToggleTab(item, index)"
+      >
+        {{ item }}
+      </div>
+    </div>
+
+    <div class="page-header" ref="header-ref">这是头部</div>
+
+    <div class="page-content">
+      <div
+        v-for="(item, index) in menuList"
+        :key="index"
+        :ref="item"
+        class="content"
+      >
+        <div style="height: 50px"></div>
+        {{ item }}
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
-  }
-}
+  data() {
+    return {
+      menuList: ["tab1", "tab2", "tab3", "tab4"],
+      tabActive: 0,
+      isShowTabs: false,
+    };
+  },
+  mounted() {
+    window.onscroll = this.debounce(() => {
+      this.handleScrollEvent();
+    }, 15);
+  },
+  methods: {
+    // 监听滚动事件
+    handleScrollEvent() {
+      // 当该元素距离顶部的高度小于1时,将navbar展示出来
+      const t1 = this.$refs["header-ref"].getBoundingClientRect().top;
+      this.isShowTabs = t1 < 1 ? true : false;
+      this.menuList.forEach((item, index) => {
+        // 当该元素距离顶部的高度小于1时,将对应的tab添加选中效果
+        const t2 = this.$refs[item][0].getBoundingClientRect().top;
+        if (t2 < 1) {
+          this.tabActive = index;
+        }
+      });
+    },
+    // 防抖函数
+    debounce(fn, delay) {
+      let timer = null;
+      return function () {
+        clearTimeout(timer);
+
+        timer = setTimeout(() => {
+          fn.apply(this, arguments);
+          clearTimeout(timer);
+        }, delay);
+      };
+    },
+    // tab点击事件
+    handleToggleTab(dom, index) {
+      this.tabActive = index;
+      this.$refs[dom][0].scrollIntoView({ block: "start", behavior: "smooth" });
+    },
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
+.page-header {
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+.navbar {
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0px 3px 13px 0px rgba(0, 0, 0, 0.17);
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 99;
+  background-color: #fff;
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+
+    &.active {
+      color: red;
+    }
+  }
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+
+.page-content {
+  .content {
+    height: 100vh;
+    padding: 0 30px;
+  }
 }
 </style>
